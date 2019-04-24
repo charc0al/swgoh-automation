@@ -5,7 +5,10 @@ SetWorkingDir %A_ScriptDir%  ; Ensures a consistent starting directory.
 
 ANDROID_TITLE = BlueStacks
 ANDROID_PATH = "C:\Program Files\BlueStacks\HD-RunApp.exe" -json "{\"app_icon_url\": \"\"`, \"app_name\": \"Heroes\"`, \"app_url\": \"\"`, \"app_pkg\": \"com.ea.game.starwarscapital_row\"}"
+ANDROID_WIDTH := 900 ;fixed width of android emulator. If you change this, the image recognition files may not work properly
+global IMAGE_SEARCH_ENABLE := true
 
+global ANDROID_ID
 global EMULATOR_LAUNCH_WAIT := 180000 ;time (in ms) to wait for emulator to finish starting up
 global CHALLENGE_WAIT := 300000 ;time (in ms) to wait after starting an auto-battle on a challenge - i.e. 300000ms = 5 minutes
 global BATTLE_WAIT := 120000 ; time (in ms) to wait after starting an auto-battle
@@ -60,16 +63,14 @@ activateEmulator() {
 	ANDROID_ID := WinExist(GAME_TITLE)
 	if (!ANDROID_ID)
 	{
-		msgbox launch: %ANDROID_ID%
 		Run %ComSpec% /c "%ANDROID_EXE%
 		notify("Launching Android emulator...")
 		WinWait %GAME_TITLE%
 		WinGet ANDROID_ID, ID, %GAME_TITLE%
 		notify("Emulator window found: " . ANDROID_ID)
 		sleep 180000
-	} else {
-		msgbox it exists
 	}
+	WinMove, ahk_id %ANDROID_ID%,,,, 900, 592
 	WinActivate ahk_id %ANDROID_ID%
 }
 
@@ -89,7 +90,8 @@ creditPurchase()
 goHome() {
 	activateEmulator()
 	push(BTN_HOME, 100)
-	push(BTN_COMPLETE, 100) ;mash that complete button in case something has gone wrong and stuck on completion screen
+	push(BTN_COMPLETE, 100)
+	push(BTN_COMPLETE, 3000) ;mash that complete button in case something has gone wrong and stuck on completion screen
 	push(BTN_HOME, 100)
 	push(BTN_HOME, 100)
 	push(BTN_CHAR, 200)
@@ -129,8 +131,29 @@ battle(delay := 0) {
 	push(BTN_BATTLE2, 8000)
 	push(BTN_AUTO, 500)
 	push(BTN_AUTO, 500)
-	sleep %delay%
-	push(BTN_COMPLETE, 5000)
+	if (IMAGE_SEARCH_ENABLE) {
+		_starttime := A_TickCount 
+		loop {
+			imgX := 0
+			imgY := 0
+			ImageSearch, imgX, imgY, 0, 0, A_ScreenWidth, A_ScreenHeight, *TransBlack *20 continuebtn.png
+			elapsedtime := A_TickCount - _starttime
+			notify("elapsedtime: " . elapsedtime)
+			if (imgX or imgY) {
+				mouseClick,, imgX, imgY
+				notify("Battle complete!")
+				break
+			} else if (elapsedtime > delay) {
+				push(BTN_COMPLETE)
+				notify("Battle timed out, continuing...")
+				break
+			}
+		}
+		sleep 5000
+	} else {
+		sleep %delay%
+		push(BTN_COMPLETE)
+	}
 }
 
 dailyShipment(key) {
@@ -209,8 +232,8 @@ spendAllyPoints() {
 }
 
 push(key, delay := 1000) {
-	;WinActivate ahk_id %ANDROID_ID%
-	controlSend, ahk_parent, {%key%}, ahk_id %ANDROID_ID%
+	WinActivate ahk_id %ANDROID_ID%
+	controlSend,, {%key%}, ahk_id %ANDROID_ID%
 	sleep %delay%
 }
 

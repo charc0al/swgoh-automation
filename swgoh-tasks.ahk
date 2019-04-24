@@ -8,7 +8,6 @@
 
 #include swgoh-functions.ahk
 
-
 ; ======== DAILY ACTIVITIES ========
 ;creditPurchase()
 ;doChallenges()
@@ -18,10 +17,15 @@
 ; ======= SHARD FARMING ========
 ;buyShards("jawa engineer") ;attempt to buy JE shards
 ;buyShards("dathcha")
-buyShards("nebit")
-;battleShards("jawa", 4) ; auto jawa's first shard battle 3 times
+;buyShards("nebit")
+battleShards("jawa", 4) ; auto jawa's first shard battle 3 times
 ;battleShards("dathcha", 5, BTN_TAB2) ; auto dathcha's 2nd tab hard battle 5 times, third parameter is optional and defaults to BTN_TAB1
 
 ; ======= CHALLENGES ==========
 ;doChallenge(BTN_TAB2) ; just do the challenge on tab 2
 ;doChallenges() ;do all challenges configured in doChallenges function
+
+
+
+notify("EXITING...")
+sleep 5000
