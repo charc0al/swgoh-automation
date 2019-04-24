@@ -3,7 +3,13 @@
 SendMode Input  ; Recommended for new scripts due to its superior speed and reliability.
 SetWorkingDir %A_ScriptDir%  ; Ensures a consistent starting directory.
 
-global game
+ANDROID_TITLE = BlueStacks
+ANDROID_PATH = "C:\Program Files\BlueStacks\HD-RunApp.exe" -json "{\"app_icon_url\": \"\"`, \"app_name\": \"Heroes\"`, \"app_url\": \"\"`, \"app_pkg\": \"com.ea.game.starwarscapital_row\"}"
+
+global EMULATOR_LAUNCH_WAIT := 180000 ;time (in ms) to wait for emulator to finish starting up
+global CHALLENGE_WAIT := 300000 ;time (in ms) to wait after starting an auto-battle on a challenge - i.e. 300000ms = 5 minutes
+global BATTLE_WAIT := 120000 ; time (in ms) to wait after starting an auto-battle
+
 global BTN_HOME := "h"         ;home button in upper right
 global BTN_BATTLE1 := "."       ;battle button on battle select screen
 global BTN_TAB1 := "y"	       ;on 3-pane screen (challenges, find shards) the leftmost panel's button
@@ -41,13 +47,31 @@ global BTN_BUY2 := "e"
 global BTN_BUY3 := "f"
 global BTN_BUY4 := "g"
 
-global CHALLENGE_WAIT := 300000 ;time (in ms) to wait after starting an auto-battle on a challenge - i.e. 300000ms = 5 minutes
-global BATTLE_WAIT := 120000 ; time (in ms) to wait after starting an auto-battle
+global ANDROID_EXE := ANDROID_PATH
+global GAME_TITLE := ANDROID_TITLE
 
-
-WinGet game, ID, BlueStacks
+activateEmulator()
 
 sleep 1000
+
+;ANDOIR_EXE := """" "C:\Program Files\BlueStacks\HD-RunApp.exe" -json "{\"app_icon_url\": \"\", \"app_name\": \"Heroes\", \"app_url\": \"\", \"app_pkg\": \"com.ea.game.starwarscapital_row\"}" """"
+
+activateEmulator() {
+	ANDROID_ID := WinExist(GAME_TITLE)
+	if (!ANDROID_ID)
+	{
+		msgbox launch: %ANDROID_ID%
+		Run %ComSpec% /c "%ANDROID_EXE%
+		notify("Launching Android emulator...")
+		WinWait %GAME_TITLE%
+		WinGet ANDROID_ID, ID, %GAME_TITLE%
+		notify("Emulator window found: " . ANDROID_ID)
+		sleep 180000
+	} else {
+		msgbox it exists
+	}
+	WinActivate ahk_id %ANDROID_ID%
+}
 
 doChallenges() {
 	doChallenge(BTN_TAB1)
@@ -63,6 +87,7 @@ creditPurchase()
 }
 
 goHome() {
+	activateEmulator()
 	push(BTN_HOME, 100)
 	push(BTN_COMPLETE, 100) ;mash that complete button in case something has gone wrong and stuck on completion screen
 	push(BTN_HOME, 100)
@@ -184,12 +209,12 @@ spendAllyPoints() {
 }
 
 push(key, delay := 1000) {
-	WinActivate ahk_id %game%
-	controlSend,, {%key%}, ahk_id %game%
+	;WinActivate ahk_id %ANDROID_ID%
+	controlSend, ahk_parent, {%key%}, ahk_id %ANDROID_ID%
 	sleep %delay%
 }
 
 notify(message) {
-	TrayTip, SWGoH Auto, %message%
-	sleep 3000
+	TrayTip, SWGoH Auto, %message%, 10
+	;sleep 3000
 }
