@@ -70,7 +70,7 @@ activateEmulator() {
 		WinGet ANDROID_ID, ID, %GAME_TITLE%
 		notify("Emulator window found: " . ANDROID_ID)
 		resizeWindow()
-		sleep 180000
+		imageWait("quests.png")
 	}
 	resizeWindow()
 	WinActivate ahk_id %ANDROID_ID%
@@ -141,30 +141,18 @@ battle(delay := 0) {
 	push(BTN_BATTLE2, 8000)
 	push(BTN_AUTO, 500)
 	push(BTN_AUTO, 500)
-	if (IMAGE_SEARCH_ENABLE) {
-		_starttime := A_TickCount 
-		loop {
-			activateEmulator()
-			imgX := 0
-			imgY := 0
-			ImageSearch, imgX, imgY, 0, 0, A_ScreenWidth, A_ScreenHeight, *TransBlack *20 continuebtn.png
-			elapsedtime := A_TickCount - _starttime
-			notify("elapsedtime: " . elapsedtime)
-			if (imgX or imgY) {
-				mouseClick,, imgX, imgY
-				notify("Battle complete!")
-				break
-			} else if (elapsedtime > delay) {
-				push(BTN_COMPLETE)
-				notify("Battle timed out, continuing...")
-				break
-			}
-		}
-		sleep 5000
-	} else {
-		sleep %delay%
-		push(BTN_COMPLETE)
-	}
+	clickImage("continuebtn.png", BTN_COMPLETE)
+}
+
+claimBonusEnergy() {
+	notify("Attempting to claim bonus energy")
+	goHome()
+	clickImage("quests.png", BTN_BATTLE2, 30000, "Opened Quests", "Attempting to open quests")
+	sleep 1000
+	push(BTN_BATTLE2)
+	push(BTN_BATTLE2)
+	push(BTN_BATTLE2)
+	push(BTN_BATTLE2)
 }
 
 clickImage(file, button, delay := 300000, msgComplete := "Battle complete!", msgTimeout := "Battle timed out, continuing...") {
@@ -191,6 +179,30 @@ clickImage(file, button, delay := 300000, msgComplete := "Battle complete!", msg
 	} else {
 		sleep %delay%
 		push(button)
+	}
+}
+
+imageWait(file, delay := 300000, msgComplete := "Found image", msgTimeout := "Image find timed out, continuing...") {
+	if (IMAGE_SEARCH_ENABLE) {
+		_starttime := A_TickCount 
+		loop {
+			activateEmulator()
+			imgX := 0
+			imgY := 0
+			ImageSearch, imgX, imgY, 0, 0, A_ScreenWidth, A_ScreenHeight, *TransBlack *20 %file%
+			elapsedtime := A_TickCount - _starttime
+			notify("elapsedtime: " . elapsedtime)
+			if (imgX or imgY) {
+				notify(msgComplete)
+				break
+			} else if (elapsedtime > delay) {
+				notify(msgTimeout)
+				break
+			}
+		}
+		sleep 5000
+	} else {
+		sleep %delay%
 	}
 }
 

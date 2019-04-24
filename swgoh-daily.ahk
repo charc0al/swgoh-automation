@@ -1,4 +1,9 @@
-﻿; =========================================================
+﻿#NoEnv  ; Recommended for performance and compatibility with future AutoHotkey releases.
+; #Warn  ; Enable warnings to assist with detecting common errors.
+SendMode Input  ; Recommended for new scripts due to its superior speed and reliability.
+SetWorkingDir %A_ScriptDir%  ; Ensures a consistent starting directory.
+
+; =========================================================
 ; ====== Script of actual tasks to run in SWGoH ===========
 ; =========================================================
 
@@ -8,12 +13,16 @@
 
 #include swgoh-functions.ahk
 
-;claimBonusEnergy()
+claimBonusEnergy()
 
 ; ======== DAILY ACTIVITIES ========
-;creditPurchase()
-;doChallenges()
-;spendAllyPoints()
+doChallenges()
+creditPurchase()
+spendAllyPoints()
+sleep 600000
+doChallenges()
+sleep 600000
+doChallenges()
 ;doChallenge(BTN_TAB2) ; just do the challenge on tab 2
 
 ; ======= SHARD FARMING ========
@@ -21,10 +30,7 @@
 ;buyShards("dathcha")
 ;buyShards("nebit")
 ;battleShards("jawa", 4) ; auto jawa's first shard battle 3 times
-battleShards("jawa", 12, BTN_TAB2) ; auto jawa's first shard battle 13 times
-buyShards("jawa scavenger")
-battleShards("luminara", 5, BTN_TAB2)
-battleShards("luminara", 5, BTN_TAB3)
+;battleShards("jawa", 4) ; auto jawa's first shard battle 3 times
 ;battleShards("dathcha", 3, BTN_TAB2) ; auto dathcha's 2nd tab hard battle 4 times, third parameter is optional and defaults to BTN_TAB1
 
 ; ======= CHALLENGES ==========
