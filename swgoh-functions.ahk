@@ -4,7 +4,7 @@ SendMode Input  ; Recommended for new scripts due to its superior speed and reli
 SetWorkingDir %A_ScriptDir%  ; Ensures a consistent starting directory.
 
 ANDROID_TITLE = BlueStacks
-ANDROID_PATH = "C:\Program Files\BlueStacks\HD-RunApp.exe" -json "{\"app_icon_url\": \"\"`, \"app_name\": \"Heroes\"`, \"app_url\": \"\"`, \"app_pkg\": \"com.ea.game.starwarscapital_row\"}"
+GAME_CMD = "C:\Program Files\BlueStacks\HD-RunApp.exe" -json "{\"app_icon_url\": \"\"`, \"app_name\": \"Heroes\"`, \"app_url\": \"\"`, \"app_pkg\": \"com.ea.game.starwarscapital_row\"}"
 ANDROID_WIDTH := 900 ;fixed width of android emulator. If you change this, the image recognition files may not work properly
 global IMAGE_SEARCH_ENABLE := true
 
@@ -50,7 +50,7 @@ global BTN_BUY2 := "e"
 global BTN_BUY3 := "f"
 global BTN_BUY4 := "g"
 
-global ANDROID_EXE := ANDROID_PATH
+global GAME_EXE := GAME_CMD
 global GAME_TITLE := ANDROID_TITLE
 
 activateEmulator()
@@ -63,15 +63,25 @@ activateEmulator() {
 	ANDROID_ID := WinExist(GAME_TITLE)
 	if (!ANDROID_ID)
 	{
-		Run %ComSpec% /c "%ANDROID_EXE%
+		Run %ComSpec% /c "%GAME_EXE%
 		notify("Launching Android emulator...")
 		WinWait %GAME_TITLE%
+		sleep 4000
 		WinGet ANDROID_ID, ID, %GAME_TITLE%
 		notify("Emulator window found: " . ANDROID_ID)
+		resizeWindow()
 		sleep 180000
 	}
-	WinMove, ahk_id %ANDROID_ID%,,,, 900, 592
+	resizeWindow()
 	WinActivate ahk_id %ANDROID_ID%
+}
+
+killEmulator() {
+	process, close, BlueStacks.exe
+}
+
+resizeWindow() {
+	WinMove, ahk_id %ANDROID_ID%,,0,0, 900, 592
 }
 
 doChallenges() {
@@ -134,6 +144,7 @@ battle(delay := 0) {
 	if (IMAGE_SEARCH_ENABLE) {
 		_starttime := A_TickCount 
 		loop {
+			activateEmulator()
 			imgX := 0
 			imgY := 0
 			ImageSearch, imgX, imgY, 0, 0, A_ScreenWidth, A_ScreenHeight, *TransBlack *20 continuebtn.png
@@ -153,6 +164,33 @@ battle(delay := 0) {
 	} else {
 		sleep %delay%
 		push(BTN_COMPLETE)
+	}
+}
+
+clickImage(file, button, delay := 300000, msgComplete := "Battle complete!", msgTimeout := "Battle timed out, continuing...") {
+	if (IMAGE_SEARCH_ENABLE) {
+		_starttime := A_TickCount 
+		loop {
+			activateEmulator()
+			imgX := 0
+			imgY := 0
+			ImageSearch, imgX, imgY, 0, 0, A_ScreenWidth, A_ScreenHeight, *TransBlack *20 %file%
+			elapsedtime := A_TickCount - _starttime
+			notify("elapsedtime: " . elapsedtime)
+			if (imgX or imgY) {
+				mouseClick,, imgX, imgY
+				notify(msgComplete)
+				break
+			} else if (elapsedtime > delay) {
+				push(button)
+				notify(msgTimeout)
+				break
+			}
+		}
+		sleep 5000
+	} else {
+		sleep %delay%
+		push(button)
 	}
 }
 
